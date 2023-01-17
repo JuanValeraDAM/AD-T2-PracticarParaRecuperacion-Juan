@@ -94,8 +94,12 @@ public class Main {
 
 
             //Consulta para obtener la cantidad de empleados en cada departamento
-
-
+        /*
+        db.personas.aggregate([
+        {$group:{_id:"$departamento", total:{$sum:1}}},
+        {$project:{_id:false, Departamento:"$_id", cantidadTotal:"$total"}}
+        ])
+         */
             //Consulta para obtener el nombre y apellido de los empleados que ganan más de $2000
 
         }
