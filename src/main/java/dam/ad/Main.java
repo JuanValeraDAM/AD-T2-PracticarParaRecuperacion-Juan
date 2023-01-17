@@ -196,6 +196,7 @@ public class Main {
             {$addToSet:{aficiones:"Tortilla"}}
             ])
              */
+            System.out.println("Consulta 11");
             Bson bsonFiltro = Filters.ne("aficiones", "Programación");
             Bson bsonSet = new Document("$addToSet", new Document("aficiones", "Programación"));
             UpdateResult update = coleccion2.updateMany(bsonFiltro, bsonSet);
@@ -207,6 +208,7 @@ public class Main {
             /*
             db.deleteMany({pais:"United States", multas:{$ne:200}})
              */
+            System.out.println("Consulta 12");
             Bson bsonDelete = Filters.ne("multas", 200);
             Bson bsonPais=new Document("pais", "United States");
             Bson bsonAnd=Filters.and(bsonDelete,bsonPais);
