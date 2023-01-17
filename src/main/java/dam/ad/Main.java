@@ -30,17 +30,17 @@ public class Main {
     public static void main(String[] args) throws SQLException, IOException {
 
 
-//Supuesto inventado con la colección personas:
-//1.Crea una aplicación en Java que se conecte a MongoDB, BaseX, Oracle y MySQL.
+    //Supuesto inventado con la colección personas:
+    //1.Crea una aplicación en Java que se conecte a MongoDB, BaseX, Oracle y MySQL.
 
-
-        try (Connection oracle = DriverManager.getConnection("jdbc:oracle:thin:@localhost:49161:XE", "practicarParaRecuperacion", "bla");
+        Logger.getLogger("org.mongodb").setLevel(Level.WARNING);
+        try (Connection oracle = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "practicarParaRecuperacion", "bla");
              Connection mysql = DriverManager.getConnection("jdbc:mysql://localhost:3306", "practicante", "bla");
              ClientSession basex = new ClientSession("localhost", 1984, "admin", "admin");
              MongoClient mongo = MongoClients.create()) {
 
             MongoCollection<Document> mongoCol = mongo.getDatabase("test").getCollection("personas");
-            Logger.getLogger("org.mongodb").setLevel(Level.WARNING);
+
             //Utiliza las operaciones de MongoDB para consultar la colección "empleados" y recuperar todos los empleados con un sueldo superior a 1000.
 
             /*    db.personas.find({sueldo:{$gt:1800}})
@@ -77,7 +77,25 @@ public class Main {
 
 
             //Consulta para obtener el nombre y apellido del empleado con el sueldo más alto
+            /*
+            db.personas.aggregate([
+			{$sort:{"sueldo":-1}},
+			{$limit:1},
+			{$project:{_id:false, Nombre:"$nombre", Apellidos:"$apellido"}}
+			])
+             */
+            System.out.println("Consulta 4");
+            Bson bsonSort=Aggregates.sort(new Document("sueldo", -1));
+            Bson bsonLimit=Aggregates.limit(1);
+            Document docProject = new Document().append("_id", false).append("Nombre", "$nombre").append("Apellidos", "$apellido");
+            Bson bsonProject2=Aggregates.project(docProject);
+            List<Document> docs4 =mongoCol.aggregate(List.of(bsonSort, bsonLimit,bsonProject2)).into(new ArrayList<>());
+            docs4.forEach(System.out::println);
+
+
             //Consulta para obtener la cantidad de empleados en cada departamento
+
+
             //Consulta para obtener el nombre y apellido de los empleados que ganan más de $2000
 
         }
