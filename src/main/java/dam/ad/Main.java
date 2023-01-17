@@ -7,16 +7,20 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.basex.api.client.ClientSession;
 import org.bson.Document;
+import org.bson.codecs.BsonTypeClassMap;
 import org.bson.conversions.Bson;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,32 +40,45 @@ public class Main {
              MongoClient mongo = MongoClients.create()) {
 
             MongoCollection<Document> mongoCol = mongo.getDatabase("test").getCollection("personas");
-            Logger.getLogger("org.mongo").setLevel(Level.WARNING);
+            Logger.getLogger("org.mongodb").setLevel(Level.WARNING);
             //Utiliza las operaciones de MongoDB para consultar la colección "empleados" y recuperar todos los empleados con un sueldo superior a 1000.
 
-            /*    db.personas.find({sueldo:{$gt:1000}})
+            /*    db.personas.find({sueldo:{$gt:1800}})
              */
-            List<Document> docs = mongoCol.find(Filters.gt("sueldo", 1000)).into(new ArrayList<>());
+            System.out.println("Consulta 1");
+            List<Document> docs = mongoCol.find(Filters.gt("sueldo", 1800)).into(new ArrayList<>());
             docs.forEach(System.out::println);
 
-//Utiliza una operación de agregación en MongoDB para calcular el sueldo promedio de todos los empleados del departamento 2.
+            //Utiliza una operación de agregación en MongoDB para calcular el sueldo promedio de todos los empleados del departamento 2.
         /*
       db.personas.aggregate([
       {$match:{"departamento":2}},
       {$group:{_id:null, sueldoMedio:{$avg:"$sueldo"}}} ])
          */
-
+            System.out.println("Consulta 2");
             Bson match = Aggregates.match(new Document("departamento", 2));
             Bson group = Aggregates.group("null", Accumulators.avg("SueldoMedio", "$sueldo"));
             List<Document> docss = mongoCol.aggregate(List.of(match, group)).into(new ArrayList<>());
             docss.forEach(System.out::println);
 
-//Crea una conexión a una base de datos MySQL y crea una tabla llamada "empleados" con los mismos campos que los objetos JSON.
-//Utiliza el array de objetos JSON para insertar registros en la tabla "empleados" de MySQL.
-//Utiliza consultas SQL para seleccionar los empleados de MySQL con un sueldo superior a 2000 y mostrarlos en la consola.
-//Utiliza una consulta SQL para calcular el promedio de sueldos de los empleados del departamento 3 en la tabla "empleados" de MySQL.
-//Utiliza MongoDB para realizar una operación de actualización masiva para aumentar el sueldo de todos los empleados en un 10%.
-//Utiliza la conexión de MySQL para actualizar los sueldos de los empleados en la tabla "empleados" con los cambios realizados en MongoDB.
+            //Consulta para obtener el promedio del sueldo de los empleados de cada departamento
+            /*
+ db.personas.aggregate([
+ {$group:{_id:"$departamento", promedio:{$avg:"$sueldo"}}},
+ {$project:{_id:false, departamento:"$_id", SueldoMedio:"$promedio"}}
+ ])            */
+
+            System.out.println("Consulta 3");
+            Bson bsonGroup = Aggregates.group("$departamento", Accumulators.avg("promedio", "$sueldo"));
+            Document etapaProject = new Document().append("_id", false).append("departamento", "$_id").append("SueldoMedio", "$promedio");
+            Bson bsonProject = Aggregates.project(etapaProject);
+            List<Document> docs3 = mongoCol.aggregate(List.of(bsonGroup, bsonProject)).into(new ArrayList<>());
+            docs3.forEach(System.out::println);
+
+
+            //Consulta para obtener el nombre y apellido del empleado con el sueldo más alto
+            //Consulta para obtener la cantidad de empleados en cada departamento
+            //Consulta para obtener el nombre y apellido de los empleados que ganan más de $2000
 
         }
     }
